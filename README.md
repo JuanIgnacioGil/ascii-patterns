@@ -1,2 +1,3 @@
-# ascii_patters
+# ascii_patterns
+
 Search patterns in ascii images
