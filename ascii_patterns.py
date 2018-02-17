@@ -6,9 +6,10 @@ Finds patters in ascii images
 """
 
 import numpy as np
+from itertools import product
 
 
-def find_bug(landscape_file, bug_file):
+def find_pattern(landscape_file, bug_file):
     """
     Count the number of times a pattern (read from a txt file) appers in an ascii image (read from another file)
 
@@ -29,15 +30,55 @@ def find_bug(landscape_file, bug_file):
     landscape = matrix_from_file(landscape_file)
     pattern = matrix_from_file(bug_file)
 
-    print(np.abs(pattern).sum())
-
-    # Look for first file of the pattern
-    candidates = [l for l in range(len(landscape)) if pattern[0] in landscape[l]]
-    print(candidates)
-
     bugs = 0
 
+    # Look for the pattern
+    for i, j in product(range(landscape.shape[0] - pattern.shape[0] + 1),
+                        range(landscape.shape[1] - pattern.shape[1] + 1)):
+
+        # Look for the pattern
+        found_pattern = is_pattern(landscape, pattern, i, j)
+
+        if found_pattern:
+            # Increase number of bugs
+            bugs += 1
+
+            # Delete the bug from the landscape, to accelerate the search
+            landscape[i:i + pattern.shape[0], j:j + pattern.shape[1]] = -1
+
     return bugs
+
+
+def is_pattern(landscape, pattern, i, j):
+    """
+    Finds if the pattern start in a given coordanates
+
+    Parameters
+    ----------
+    landscape: numpy.array
+        The data to search in
+    pattern: numpy.array
+        Pattern to search
+    i: int
+        Starting x coordinate
+    j: int
+        Starting y coordinate
+
+    Returns
+    -------
+    bool
+
+    """
+
+    found_pattern = True
+
+    # Compare element by element until a difference is found
+    for x, y in product(range(pattern.shape[0]), range(pattern.shape[1])):
+        if landscape[i + x, j + y] != pattern[x, y]:
+            found_pattern = False
+            break
+
+    return found_pattern
 
 
 def matrix_from_file(filename):
@@ -81,5 +122,5 @@ def matrix_from_file(filename):
 
 
 if __name__ == '__main__':
-    bugs_ = find_bug('landscape.txt', 'bug.txt')
+    bugs_ = find_pattern('landscape.txt', 'bug.txt')
     print(bugs_)
