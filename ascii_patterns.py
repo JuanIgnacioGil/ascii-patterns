@@ -8,9 +8,10 @@ Finds patters in ascii images
 
 import numpy as np
 from itertools import product
+from functools import reduce
 
 
-def find_pattern(landscape, pattern):
+def find_pattern(landscape, pattern, rotations=False):
     """
     Count the number of times a pattern (read from a txt file) appers in an ascii image (read from another file)
 
@@ -25,6 +26,8 @@ def find_pattern(landscape, pattern):
         Path of the ascii image, or numpy array
     pattern: str or numpy.array
         Path of the pattern or numpy array
+    rotations: bool
+        If True (defaults to False) the rotated patterns are also matched
 
     Returns
     -------
@@ -38,21 +41,45 @@ def find_pattern(landscape, pattern):
     if isinstance(pattern, str):
         pattern = matrix_from_file(pattern)
 
+    # If necessary, generate a list with the rotated patterns
+    if rotations:
+        rotated = [pattern]
+        for t in range(3):
+            rotated.append(rotated[t].T)
+
+        rotated = rotated[1:]
+
     bugs = 0
 
+    if rotations:
+        ps = [min(pattern.shape)] * 2
+    else:
+        ps = pattern.shape
+
     # Look for the pattern
-    for i, j in product(range(landscape.shape[0] - pattern.shape[0] + 1),
-                        range(landscape.shape[1] - pattern.shape[1] + 1)):
+    for i, j in product(range(landscape.shape[0] - ps[0] + 1),
+                        range(landscape.shape[1] - ps[1] + 1)):
 
         # Look for the pattern
         found_pattern = is_pattern(landscape, pattern, i, j)
+
+        if found_pattern:
+            this_fp = pattern.shape
+
+        # Look for rotated pattern
+        if rotations and not found_pattern:
+            for r in rotated:
+                found_pattern = is_pattern(landscape, r, i, j)
+
+                if found_pattern:
+                    this_fp = r.shape
 
         if found_pattern:
             # Increase number of bugs
             bugs += 1
 
             # Delete the bug from the landscape, to accelerate the search
-            landscape[i:i + pattern.shape[0], j:j + pattern.shape[1]] = 0
+            landscape[i:i + this_fp[0], j:j + this_fp[1]] = 0
 
     return bugs
 
@@ -134,7 +161,7 @@ def generate_random_landscape(size, pattern, number_of_patterns):
     For testing purposes, generates a random landscape and introduces a pattern a given number of times.
 
     The function places the pattern randomly, avoiding to stamp on previous patterns. After 2 * number_of_patters
-    attempts, it exits with error (this is not a tesellation function, and makes no attempt to be efficient)
+    attempts, it exits with error (this is not a tessellation function, and makes no attempt to be efficient)
 
     Examples
     ---------
@@ -193,9 +220,9 @@ def generate_random_landscape(size, pattern, number_of_patterns):
 
 
 if __name__ == '__main__':
-    bugs_ = find_pattern('landscape.txt', 'bug.txt')
+    bugs_ = find_pattern('landscape.txt', 'bug.txt', rotations=True)
     print(bugs_)
 
     landscape_ = generate_random_landscape((1000, 1000), 'bug.txt', 200)
-    n = find_pattern(landscape_, 'bug.txt')
+    n = find_pattern(landscape_, 'bug.txt', rotations=True)
     print(n)
