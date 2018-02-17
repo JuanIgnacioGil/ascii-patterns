@@ -131,7 +131,15 @@ def matrix_from_file(filename):
 
 def generate_random_landscape(size, pattern, number_of_patterns):
     """
-    For testing purposes, generates a random landscape and introduces a pattern a given number of times
+    For testing purposes, generates a random landscape and introduces a pattern a given number of times.
+
+    The function places the pattern randomly, avoiding to stamp on previous patterns. After 2 * number_of_patters
+    attempts, it exits with error (this is not a tesellation function, and makes no attempt to be efficient)
+
+    Examples
+    ---------
+    >>> find_pattern(generate_random_landscape((1000, 1000), 'bug.txt', 100), 'bug.txt')
+    100
 
     Parameters
     ----------
@@ -146,20 +154,40 @@ def generate_random_landscape(size, pattern, number_of_patterns):
     -------
     np.array
 
+    Raises
+    -------
+    StopIteration
+        If the algorithm is not able to put all the requested patterns
+
     """
 
     # Generate random landscape
     landscape = np.random.randint(0, high=1000, size=size)
+    pattern_locations = np.zeros(size)
+    patterns_introduced = 0
+    attempts = 0
 
     # Read pattern file
     pattern = matrix_from_file(pattern)
 
     # Randomly introduce the pattern into the landscape
-    for _ in range(number_of_patterns):
+    while patterns_introduced < number_of_patterns:
+
         start_x = np.random.randint(0, high=size[0] - pattern.shape[0] + 1)
         start_y = np.random.randint(0, high=size[1] - pattern.shape[1] + 1)
 
-        landscape[start_x: start_x + pattern.shape[0], start_y: start_y + pattern.shape[1]] = pattern
+        # Only introduce the pattern if the area is untouched
+        if pattern_locations[start_x: start_x + pattern.shape[0], start_y: start_y + pattern.shape[1]].sum() == 0:
+            # Write pattern
+            landscape[start_x: start_x + pattern.shape[0], start_y: start_y + pattern.shape[1]] = pattern
+            # Mark coordinates as touched
+            pattern_locations[start_x: start_x + pattern.shape[0], start_y: start_y + pattern.shape[1]] = 1
+            # Increase counter
+            patterns_introduced += 1
+
+        attempts += 1
+        if attempts > 2 * number_of_patterns:
+            raise StopIteration('The number of patterns was too high for the landscape size')
 
     return landscape
 
@@ -168,6 +196,6 @@ if __name__ == '__main__':
     bugs_ = find_pattern('landscape.txt', 'bug.txt')
     print(bugs_)
 
-    landscape_ = generate_random_landscape((1000, 1000), 'bug.txt', 100)
+    landscape_ = generate_random_landscape((1000, 1000), 'bug.txt', 200)
     n = find_pattern(landscape_, 'bug.txt')
     print(n)
