@@ -3,22 +3,28 @@
 Find the bug
 
 Finds patters in ascii images
+
 """
 
 import numpy as np
 from itertools import product
 
 
-def find_pattern(landscape_file, bug_file):
+def find_pattern(landscape, pattern):
     """
     Count the number of times a pattern (read from a txt file) appers in an ascii image (read from another file)
 
+    Examples
+    ---------
+    >>> find_pattern('landscape.txt', 'bug.txt')
+    3
+
     Parameters
     ----------
-    landscape_file: str
-        Path of the ascii image
-    bug_file: str
-        Path of the pattern
+    landscape: str or numpy.array
+        Path of the ascii image, or numpy array
+    pattern: str or numpy.array
+        Path of the pattern or numpy array
 
     Returns
     -------
@@ -26,9 +32,11 @@ def find_pattern(landscape_file, bug_file):
         Number of times the pattern appears in the image
 
     """
+    if isinstance(landscape, str):
+        landscape = matrix_from_file(landscape)
 
-    landscape = matrix_from_file(landscape_file)
-    pattern = matrix_from_file(bug_file)
+    if isinstance(pattern, str):
+        pattern = matrix_from_file(pattern)
 
     bugs = 0
 
@@ -44,7 +52,7 @@ def find_pattern(landscape_file, bug_file):
             bugs += 1
 
             # Delete the bug from the landscape, to accelerate the search
-            landscape[i:i + pattern.shape[0], j:j + pattern.shape[1]] = -1
+            landscape[i:i + pattern.shape[0], j:j + pattern.shape[1]] = 0
 
     return bugs
 
@@ -101,7 +109,7 @@ def matrix_from_file(filename):
         int_list = [ord(c) for c in char_list]
         raw_matrix.append(int_list)
 
-    # All rows need the same number of elements. Insert whitespaces (32) at the end
+    # All rows need the same number of elements. Insert whitespace (32) at the end
     n_columns = max([len(r) for r in raw_matrix])
 
     new_matrix = []
@@ -121,6 +129,45 @@ def matrix_from_file(filename):
     return matrix
 
 
+def generate_random_landscape(size, pattern, number_of_patterns):
+    """
+    For testing purposes, generates a random landscape and introduces a pattern a given number of times
+
+    Parameters
+    ----------
+    size: tuple
+        Size of the landscape
+    pattern: str
+        Text file for the pattern
+    number_of_patterns: int
+        Number of times we want to introduce the pattern into the landscape
+
+    Returns
+    -------
+    np.array
+
+    """
+
+    # Generate random landscape
+    landscape = np.random.randint(0, high=1000, size=size)
+
+    # Read pattern file
+    pattern = matrix_from_file(pattern)
+
+    # Randomly introduce the pattern into the landscape
+    for _ in range(number_of_patterns):
+        start_x = np.random.randint(0, high=size[0] - pattern.shape[0] + 1)
+        start_y = np.random.randint(0, high=size[1] - pattern.shape[1] + 1)
+
+        landscape[start_x: start_x + pattern.shape[0], start_y: start_y + pattern.shape[1]] = pattern
+
+    return landscape
+
+
 if __name__ == '__main__':
     bugs_ = find_pattern('landscape.txt', 'bug.txt')
     print(bugs_)
+
+    landscape_ = generate_random_landscape((1000, 1000), 'bug.txt', 100)
+    n = find_pattern(landscape_, 'bug.txt')
+    print(n)
