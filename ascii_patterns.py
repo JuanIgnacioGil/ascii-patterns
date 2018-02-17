@@ -8,7 +8,6 @@ Finds patters in ascii images
 
 import numpy as np
 from itertools import product
-from functools import reduce
 
 
 def find_pattern(landscape, pattern, rotations=False):
@@ -43,45 +42,54 @@ def find_pattern(landscape, pattern, rotations=False):
 
     # If necessary, generate a list with the rotated patterns
     if rotations:
-        rotated = [pattern]
-        for t in range(3):
-            rotated.append(rotated[t].T)
-
-        rotated = rotated[1:]
-
-    bugs = 0
-
-    if rotations:
+        rotated = generated_rotations(pattern)
         ps = [min(pattern.shape)] * 2
     else:
+        rotated = [pattern]
         ps = pattern.shape
 
     # Look for the pattern
+    bugs = 0
+
     for i, j in product(range(landscape.shape[0] - ps[0] + 1),
                         range(landscape.shape[1] - ps[1] + 1)):
 
-        # Look for the pattern
-        found_pattern = is_pattern(landscape, pattern, i, j)
+        for r in rotated:
+            found_pattern = is_pattern(landscape, r, i, j)
 
-        if found_pattern:
-            this_fp = pattern.shape
-
-        # Look for rotated pattern
-        if rotations and not found_pattern:
-            for r in rotated:
-                found_pattern = is_pattern(landscape, r, i, j)
-
-                if found_pattern:
-                    this_fp = r.shape
+            if found_pattern:
+                this_fp = r.shape
+                break
 
         if found_pattern:
             # Increase number of bugs
             bugs += 1
 
             # Delete the bug from the landscape, to accelerate the search
-            landscape[i:i + this_fp[0], j:j + this_fp[1]] = 0
+            landscape[i:i + this_fp[0], j:j + this_fp[1]] = -1
 
     return bugs
+
+
+def generated_rotations(pattern):
+    """
+    Generate a vector with the four rotations of the pattern
+
+    Parameters
+    ----------
+    pattern: numpy.array
+
+    Returns
+    -------
+    list
+
+    """
+
+    rotated = [pattern]
+    for t in range(3):
+        rotated.append(rotated[t].T)
+
+    return rotated
 
 
 def is_pattern(landscape, pattern, i, j):
@@ -156,7 +164,7 @@ def matrix_from_file(filename):
     return matrix
 
 
-def generate_random_landscape(size, pattern, number_of_patterns):
+def generate_random_landscape(size, pattern, number_of_patterns, rotations=False):
     """
     For testing purposes, generates a random landscape and introduces a pattern a given number of times.
 
@@ -176,6 +184,8 @@ def generate_random_landscape(size, pattern, number_of_patterns):
         Text file for the pattern
     number_of_patterns: int
         Number of times we want to introduce the pattern into the landscape
+    rotations: bool
+        If True (defaults to False), the pattern is randomly rotated for each insertion
 
     Returns
     -------
@@ -197,18 +207,27 @@ def generate_random_landscape(size, pattern, number_of_patterns):
     # Read pattern file
     pattern = matrix_from_file(pattern)
 
+    # If necessary, generate a list with the rotated patterns
+    if rotations:
+        rotated = generated_rotations(pattern)
+
     # Randomly introduce the pattern into the landscape
     while patterns_introduced < number_of_patterns:
 
-        start_x = np.random.randint(0, high=size[0] - pattern.shape[0] + 1)
-        start_y = np.random.randint(0, high=size[1] - pattern.shape[1] + 1)
+        if rotations:
+            p = np.random.choice(rotated)
+        else:
+            p = pattern
+
+        start_x = np.random.randint(0, high=size[0] - p.shape[0] + 1)
+        start_y = np.random.randint(0, high=size[1] - p.shape[1] + 1)
 
         # Only introduce the pattern if the area is untouched
-        if pattern_locations[start_x: start_x + pattern.shape[0], start_y: start_y + pattern.shape[1]].sum() == 0:
+        if pattern_locations[start_x: start_x + p.shape[0], start_y: start_y + p.shape[1]].sum() == 0:
             # Write pattern
-            landscape[start_x: start_x + pattern.shape[0], start_y: start_y + pattern.shape[1]] = pattern
+            landscape[start_x: start_x + p.shape[0], start_y: start_y + p.shape[1]] = p
             # Mark coordinates as touched
-            pattern_locations[start_x: start_x + pattern.shape[0], start_y: start_y + pattern.shape[1]] = 1
+            pattern_locations[start_x: start_x + p.shape[0], start_y: start_y + p.shape[1]] = 1
             # Increase counter
             patterns_introduced += 1
 
@@ -220,9 +239,9 @@ def generate_random_landscape(size, pattern, number_of_patterns):
 
 
 if __name__ == '__main__':
-    bugs_ = find_pattern('landscape.txt', 'bug.txt', rotations=True)
+    bugs_ = find_pattern('landscape.txt', 'bug.txt', rotations=False)
     print(bugs_)
 
-    landscape_ = generate_random_landscape((1000, 1000), 'bug.txt', 200)
+    landscape_ = generate_random_landscape((1000, 1000), 'bug.txt', 200, rotations=True)
     n = find_pattern(landscape_, 'bug.txt', rotations=True)
     print(n)
