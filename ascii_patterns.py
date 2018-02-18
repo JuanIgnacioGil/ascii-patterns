@@ -239,9 +239,16 @@ def generate_random_landscape(size, pattern, number_of_patterns, rotations=False
 
 
 if __name__ == '__main__':
+
+    import time
+    start = time.time()
+
     bugs_ = find_pattern('landscape.txt', 'bug.txt', rotations=False)
     print(bugs_)
 
     landscape_ = generate_random_landscape((1000, 1000), 'bug.txt', 200, rotations=True)
     n = find_pattern(landscape_, 'bug.txt', rotations=True)
     print(n)
+
+    end = time.time()
+    print('{0:.2f}s'.format(end - start))
