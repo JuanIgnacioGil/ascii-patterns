@@ -7,7 +7,6 @@ Finds patters in ascii images
 """
 
 import numpy as np
-from itertools import product
 
 
 def find_pattern(landscape, pattern):
@@ -41,18 +40,28 @@ def find_pattern(landscape, pattern):
     # Look for the pattern
     bugs = 0
 
-    for i, j in product(range(landscape.shape[0] - pattern.shape[0] + 1),
-                        range(landscape.shape[1] - pattern.shape[1] + 1)):
+    for i in range(landscape.shape[0] - pattern.shape[0] + 1):
+        j = 0
+        while j <= landscape.shape[1] - pattern.shape[1]:
 
-        if landscape[i, j] > -3:
-            found_pattern = is_pattern(landscape, pattern, i, j)
+            if landscape[i, j] > -2:
+                found_pattern = is_pattern(landscape, pattern, i, j)
 
-            if found_pattern:
-                # Increase number of bugs
-                bugs += 1
+                if found_pattern:
+                    # Increase number of bugs
+                    bugs += 1
 
-                # Delete the bug from the landscape, to accelerate the search
-                landscape[i:i + pattern.shape[0], j:j + pattern.shape[1]] = -3
+                    # Delete the bug from the landscape, to accelerate the search
+                    landscape[i:i + pattern.shape[0], j:j + pattern.shape[1]] = -3
+
+                    # Advance j to the end of the pattern
+                    j += pattern.shape[1] - 1
+
+            # If the rest of the line is empty, don't keep looking
+            elif landscape[i, j] == -2:
+                break
+
+            j += 1
 
     return bugs
 
@@ -141,7 +150,7 @@ def matrix_from_file(filename):
     matrix = np.vstack(new_matrix)
 
     for r in range(matrix.shape[0]):
-        # Replace white spaces at the start of the row by a -2, so that they can be matched
+        # Replace white spaces at the start of the row by a -1, so that they can be matched
         for k in range(n_columns):
             if matrix[r, k] == 32:
                 matrix[r, k] = -1
@@ -234,11 +243,11 @@ if __name__ == '__main__':
     n = find_pattern(landscape_, bug_)
     print(n)
 
-    landscape_ = generate_random_landscape((1000, 1000), 'bug.txt', 200)
+    landscape_ = generate_random_landscape((2000, 2000), 'bug.txt', 100)
     n = find_pattern(landscape_, 'bug.txt')
     print(n)
 
-    landscape_ = generate_random_landscape((1000, 1000), 'bug2.txt', 200)
+    landscape_ = generate_random_landscape((2000, 2000), 'bug2.txt', 100)
     n = find_pattern(landscape_, 'bug2.txt')
     print(n)
 
