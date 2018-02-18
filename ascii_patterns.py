@@ -54,19 +54,20 @@ def find_pattern(landscape, pattern, rotations=False):
     for i, j in product(range(landscape.shape[0] - ps[0] + 1),
                         range(landscape.shape[1] - ps[1] + 1)):
 
-        for r in rotated:
-            found_pattern = is_pattern(landscape, r, i, j)
+        if landscape[i, j] >= 0:
+            for r in rotated:
+                found_pattern = is_pattern(landscape, r, i, j)
+
+                if found_pattern:
+                    this_fp = r.shape
+                    break
 
             if found_pattern:
-                this_fp = r.shape
-                break
+                # Increase number of bugs
+                bugs += 1
 
-        if found_pattern:
-            # Increase number of bugs
-            bugs += 1
-
-            # Delete the bug from the landscape, to accelerate the search
-            landscape[i:i + this_fp[0], j:j + this_fp[1]] = -1
+                # Delete the bug from the landscape, to accelerate the search
+                landscape[i:i + this_fp[0], j:j + this_fp[1]] = -1
 
     return bugs
 
@@ -86,6 +87,7 @@ def generated_rotations(pattern):
     """
 
     rotated = [pattern]
+
     for t in range(3):
         rotated.append(rotated[t].T)
 
@@ -205,7 +207,8 @@ def generate_random_landscape(size, pattern, number_of_patterns, rotations=False
     attempts = 0
 
     # Read pattern file
-    pattern = matrix_from_file(pattern)
+    if isinstance(pattern, str):
+        pattern = matrix_from_file(pattern)
 
     # If necessary, generate a list with the rotated patterns
     if rotations:
@@ -215,7 +218,7 @@ def generate_random_landscape(size, pattern, number_of_patterns, rotations=False
     while patterns_introduced < number_of_patterns:
 
         if rotations:
-            p = np.random.choice(rotated)
+            p = rotated[np.random.choice(4)]
         else:
             p = pattern
 
@@ -246,8 +249,9 @@ if __name__ == '__main__':
     bugs_ = find_pattern('landscape.txt', 'bug.txt', rotations=False)
     print(bugs_)
 
-    landscape_ = generate_random_landscape((1000, 1000), 'bug.txt', 200, rotations=True)
-    n = find_pattern(landscape_, 'bug.txt', rotations=True)
+    bug_ = np.random.randint(0, high=1000, size=(10, 10))
+    landscape_ = generate_random_landscape((1000, 1000), bug_, 200, rotations=True)
+    n = find_pattern(landscape_, bug_, rotations=True)
     print(n)
 
     end = time.time()
