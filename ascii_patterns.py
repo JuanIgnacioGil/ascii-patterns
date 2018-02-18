@@ -119,9 +119,10 @@ def is_pattern(landscape, pattern, i, j):
 
     # Compare element by element until a difference is found
     for x, y in product(range(pattern.shape[0]), range(pattern.shape[1])):
-        if landscape[i + x, j + y] != pattern[x, y]:
-            found_pattern = False
-            break
+        if pattern[x, y] > -2:
+            if landscape[i + x, j + y] != pattern[x, y]:
+                found_pattern = False
+                break
 
     return found_pattern
 
@@ -146,8 +147,9 @@ def matrix_from_file(filename):
         int_list = [ord(c) for c in char_list]
         raw_matrix.append(int_list)
 
-    # All rows need the same number of elements. Insert whitespace (32) at the end
+    # All rows need the same number of elements. Insert a -2 at the end (we will use this -2 to match any character)
     n_columns = max([len(r) for r in raw_matrix])
+    min_columns = min([len(r) for r in raw_matrix])
 
     new_matrix = []
 
@@ -155,9 +157,9 @@ def matrix_from_file(filename):
         rc = len(raw_matrix[r])
 
         if 0 < rc < n_columns:
-            new_matrix.append(raw_matrix[r] + [32] * (n_columns - rc))
+            new_matrix.append(raw_matrix[r] + [-2] * (n_columns - rc))
         elif rc == 0:
-            new_matrix.append([32] * n_columns)
+            new_matrix.append([32] * min_columns + [-2] * (n_columns - min_columns))
         else:
             new_matrix.append(raw_matrix[r])
 
@@ -247,6 +249,9 @@ if __name__ == '__main__':
     start = time.time()
 
     bugs_ = find_pattern('landscape.txt', 'bug.txt', rotations=False)
+    print(bugs_)
+
+    bugs_ = find_pattern('landscape2.txt', 'bug.txt', rotations=False)
     print(bugs_)
 
     bug_ = np.random.randint(0, high=1000, size=(10, 10))
