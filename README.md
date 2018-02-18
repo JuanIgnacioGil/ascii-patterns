@@ -6,7 +6,8 @@ Search patterns in ascii images
 
 ### find_pattern ###
 ```python
-find_pattern('landscape.txt', 'bug.txt')```
+find_pattern('landscape.txt', 'bug.txt')
+```
 
 Finds the number of times the pattern in the file ```bug.txt``` can be found in the ascii
 image in the file ```landscape.txt```.
@@ -14,7 +15,9 @@ image in the file ```landscape.txt```.
 ### generate_random_landscape ###
 
 ```python
-generate_random_landscape((1000, 1000), 'bug.txt', 200)```
+generate_random_landscape((1000, 1000), 'bug.txt', 200)
+```
+
 generates a numpy array of (1000, 1000) which has the pattern in file ```bug.txt``` 200 times, and which can be passed directly to ```find_pattern``` for testing purposes.
 
 ## Dependencies ##
