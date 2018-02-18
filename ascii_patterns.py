@@ -44,7 +44,7 @@ def find_pattern(landscape, pattern):
     for i, j in product(range(landscape.shape[0] - pattern.shape[0] + 1),
                         range(landscape.shape[1] - pattern.shape[1] + 1)):
 
-        if landscape[i, j] >= 0:
+        if landscape[i, j] >= -3:
             found_pattern = is_pattern(landscape, pattern, i, j)
 
             if found_pattern:
@@ -52,7 +52,7 @@ def find_pattern(landscape, pattern):
                 bugs += 1
 
                 # Delete the bug from the landscape, to accelerate the search
-                landscape[i:i + pattern.shape[0], j:j + pattern.shape[1]] = -1
+                landscape[i:i + pattern.shape[0], j:j + pattern.shape[1]] = -3
 
     return bugs
 
@@ -156,7 +156,7 @@ def generate_random_landscape(size, pattern, number_of_patterns):
     ----------
     size: tuple
         Size of the landscape
-    pattern: str
+    pattern: str of numpy.array
         Text file for the pattern
     number_of_patterns: int
         Number of times we want to introduce the pattern into the landscape
@@ -215,9 +215,20 @@ if __name__ == '__main__':
     bugs_ = find_pattern('landscape2.txt', 'bug2.txt')
     print(bugs_)
 
-    bug_ = np.random.randint(0, high=1000, size=(10, 10))
+    bugs_ = find_pattern('landscape2.txt', 'bug.txt')
+    print(bugs_)
+
+    bug_ = np.random.randint(0, high=1000, size=(10, 5))
     landscape_ = generate_random_landscape((1000, 1000), bug_, 200)
     n = find_pattern(landscape_, bug_)
+    print(n)
+
+    landscape_ = generate_random_landscape((1000, 1000), 'bug.txt', 200)
+    n = find_pattern(landscape_, 'bug.txt')
+    print(n)
+
+    landscape_ = generate_random_landscape((1000, 1000), 'bug2.txt', 200)
+    n = find_pattern(landscape_, 'bug2.txt')
     print(n)
 
     end = time.time()
