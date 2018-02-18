@@ -111,6 +111,11 @@ def matrix_from_file(filename):
         raw_matrix.append(int_list)
 
     # All rows need the same number of elements. Insert a -2 at the end (we will use this -2 to match any character)
+    # FIXME:
+    # (This is probably not neccesary (it is an inheritance of a previous version , where also rotated patterns
+    # where matched, so the figured needed to be rectangular). Searching only until the real end of the line would
+    # be more efficient)
+
     n_columns = max([len(r) for r in raw_matrix])
     min_columns = max([1, min([len(r) for r in raw_matrix])])  # Used to fill empty rows
 
