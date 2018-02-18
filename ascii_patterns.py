@@ -42,7 +42,8 @@ def find_pattern(landscape, pattern):
 
     for i in range(landscape.shape[0] - pattern.shape[0] + 1):
         j = 0
-        while j <= landscape.shape[1] - pattern.shape[1]:
+        # Loop until the end of the row (a -2 indicates that everything that comes after is empty, so we stop looking)
+        while (j <= landscape.shape[1] - pattern.shape[1]) and (landscape[i, j] != -2):
 
             if landscape[i, j] > -2:
                 found_pattern = is_pattern(landscape, pattern, i, j)
@@ -56,10 +57,6 @@ def find_pattern(landscape, pattern):
 
                     # Advance j to the end of the pattern
                     j += pattern.shape[1] - 1
-
-            # If the rest of the line is empty, don't keep looking
-            elif landscape[i, j] == -2:
-                break
 
             j += 1
 
@@ -109,6 +106,12 @@ def matrix_from_file(filename):
     """
     Reads a text file and returns a numpy array with a integer matrix representation
 
+    The result is a numpy array of integers, where every character is represented by its ascii index, except:
+    * White spaces at the start of a row are -1
+    * White spaces at the end of a row are -2
+
+    FIXME: (This won't properly if the pattern has white spaces at the end of the row which have to be matched)
+
     Parameters
     ----------
     filename: str
@@ -122,12 +125,14 @@ def matrix_from_file(filename):
 
     for line in open(filename):
         char_list = line.rstrip('\n')
+
+        # Convert character to its ascii index for easier processing
         int_list = [ord(c) for c in char_list]
         raw_matrix.append(int_list)
 
     # All rows need the same number of elements. Insert a -2 at the end (we will use this -2 to match any character)
     # FIXME:
-    # (This is probably not neccesary (it is an inheritance of a previous version , where also rotated patterns
+    # (This is probably not necessary (it comes from a previous version, where also rotated patterns
     # where matched, so the figured needed to be rectangular). Searching only until the real end of the line would
     # be more efficient)
 
@@ -142,7 +147,7 @@ def matrix_from_file(filename):
         if 0 < rc < n_columns:
             new_matrix.append(raw_matrix[r] + [-2] * (n_columns - rc))
         elif rc == 0:
-            # If the row is empty, we fill it withespaces until the minimum figure length, and then with -2
+            # If the row is empty, we fill it withe spaces until the minimum figure length, and then with -2
             new_matrix.append([32] * min_columns + [-2] * (n_columns - min_columns))
         else:
             new_matrix.append(raw_matrix[r])
