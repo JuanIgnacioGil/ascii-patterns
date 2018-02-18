@@ -1,4 +1,6 @@
-                                       
+This file is similar to the first one, except that some characters are put in the bugs corners,
+but they are still bugs
+
     | |c
     ###O                               
     | |           | |q
@@ -7,3 +9,12 @@
                                    ###O
                                    | | 
 
+
+
+  | |
+#####O
+  | |
+
+                 c| |
+                #####O
+                  | |

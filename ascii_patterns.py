@@ -10,7 +10,7 @@ import numpy as np
 from itertools import product
 
 
-def find_pattern(landscape, pattern, rotations=False):
+def find_pattern(landscape, pattern):
     """
     Count the number of times a pattern (read from a txt file) appers in an ascii image (read from another file)
 
@@ -25,8 +25,6 @@ def find_pattern(landscape, pattern, rotations=False):
         Path of the ascii image, or numpy array
     pattern: str or numpy.array
         Path of the pattern or numpy array
-    rotations: bool
-        If True (defaults to False) the rotated patterns are also matched
 
     Returns
     -------
@@ -40,58 +38,23 @@ def find_pattern(landscape, pattern, rotations=False):
     if isinstance(pattern, str):
         pattern = matrix_from_file(pattern)
 
-    # If necessary, generate a list with the rotated patterns
-    if rotations:
-        rotated = generated_rotations(pattern)
-        ps = [min(pattern.shape)] * 2
-    else:
-        rotated = [pattern]
-        ps = pattern.shape
-
     # Look for the pattern
     bugs = 0
 
-    for i, j in product(range(landscape.shape[0] - ps[0] + 1),
-                        range(landscape.shape[1] - ps[1] + 1)):
+    for i, j in product(range(landscape.shape[0] - pattern.shape[0] + 1),
+                        range(landscape.shape[1] - pattern.shape[1] + 1)):
 
         if landscape[i, j] >= 0:
-            for r in rotated:
-                found_pattern = is_pattern(landscape, r, i, j)
-
-                if found_pattern:
-                    this_fp = r.shape
-                    break
+            found_pattern = is_pattern(landscape, pattern, i, j)
 
             if found_pattern:
                 # Increase number of bugs
                 bugs += 1
 
                 # Delete the bug from the landscape, to accelerate the search
-                landscape[i:i + this_fp[0], j:j + this_fp[1]] = -1
+                landscape[i:i + pattern.shape[0], j:j + pattern.shape[1]] = -1
 
     return bugs
-
-
-def generated_rotations(pattern):
-    """
-    Generate a vector with the four rotations of the pattern
-
-    Parameters
-    ----------
-    pattern: numpy.array
-
-    Returns
-    -------
-    list
-
-    """
-
-    rotated = [pattern]
-
-    for t in range(3):
-        rotated.append(rotated[t].T)
-
-    return rotated
 
 
 def is_pattern(landscape, pattern, i, j):
@@ -149,7 +112,7 @@ def matrix_from_file(filename):
 
     # All rows need the same number of elements. Insert a -2 at the end (we will use this -2 to match any character)
     n_columns = max([len(r) for r in raw_matrix])
-    min_columns = min([len(r) for r in raw_matrix])
+    min_columns = max([1, min([len(r) for r in raw_matrix])])  # Used to fill empty rows
 
     new_matrix = []
 
@@ -159,16 +122,25 @@ def matrix_from_file(filename):
         if 0 < rc < n_columns:
             new_matrix.append(raw_matrix[r] + [-2] * (n_columns - rc))
         elif rc == 0:
+            # If the row is empty, we fill it withespaces until the minimum figure length, and then with -2
             new_matrix.append([32] * min_columns + [-2] * (n_columns - min_columns))
         else:
             new_matrix.append(raw_matrix[r])
 
     matrix = np.vstack(new_matrix)
 
+    for r in range(matrix.shape[0]):
+        # Replace white spaces at the start of the row by a -2, so that they can be matched
+        for k in range(n_columns):
+            if matrix[r, k] == 32:
+                matrix[r, k] = -2
+            else:
+                break
+
     return matrix
 
 
-def generate_random_landscape(size, pattern, number_of_patterns, rotations=False):
+def generate_random_landscape(size, pattern, number_of_patterns):
     """
     For testing purposes, generates a random landscape and introduces a pattern a given number of times.
 
@@ -188,8 +160,6 @@ def generate_random_landscape(size, pattern, number_of_patterns, rotations=False
         Text file for the pattern
     number_of_patterns: int
         Number of times we want to introduce the pattern into the landscape
-    rotations: bool
-        If True (defaults to False), the pattern is randomly rotated for each insertion
 
     Returns
     -------
@@ -212,27 +182,18 @@ def generate_random_landscape(size, pattern, number_of_patterns, rotations=False
     if isinstance(pattern, str):
         pattern = matrix_from_file(pattern)
 
-    # If necessary, generate a list with the rotated patterns
-    if rotations:
-        rotated = generated_rotations(pattern)
-
     # Randomly introduce the pattern into the landscape
     while patterns_introduced < number_of_patterns:
 
-        if rotations:
-            p = rotated[np.random.choice(4)]
-        else:
-            p = pattern
-
-        start_x = np.random.randint(0, high=size[0] - p.shape[0] + 1)
-        start_y = np.random.randint(0, high=size[1] - p.shape[1] + 1)
+        start_x = np.random.randint(0, high=size[0] - pattern.shape[0] + 1)
+        start_y = np.random.randint(0, high=size[1] - pattern.shape[1] + 1)
 
         # Only introduce the pattern if the area is untouched
-        if pattern_locations[start_x: start_x + p.shape[0], start_y: start_y + p.shape[1]].sum() == 0:
+        if pattern_locations[start_x: start_x + pattern.shape[0], start_y: start_y + pattern.shape[1]].sum() == 0:
             # Write pattern
-            landscape[start_x: start_x + p.shape[0], start_y: start_y + p.shape[1]] = p
+            landscape[start_x: start_x + pattern.shape[0], start_y: start_y + pattern.shape[1]] = pattern
             # Mark coordinates as touched
-            pattern_locations[start_x: start_x + p.shape[0], start_y: start_y + p.shape[1]] = 1
+            pattern_locations[start_x: start_x + pattern.shape[0], start_y: start_y + pattern.shape[1]] = 1
             # Increase counter
             patterns_introduced += 1
 
@@ -248,15 +209,15 @@ if __name__ == '__main__':
     import time
     start = time.time()
 
-    bugs_ = find_pattern('landscape.txt', 'bug.txt', rotations=False)
+    bugs_ = find_pattern('landscape.txt', 'bug.txt')
     print(bugs_)
 
-    bugs_ = find_pattern('landscape2.txt', 'bug.txt', rotations=False)
+    bugs_ = find_pattern('landscape2.txt', 'bug2.txt')
     print(bugs_)
 
     bug_ = np.random.randint(0, high=1000, size=(10, 10))
-    landscape_ = generate_random_landscape((1000, 1000), bug_, 200, rotations=True)
-    n = find_pattern(landscape_, bug_, rotations=True)
+    landscape_ = generate_random_landscape((1000, 1000), bug_, 200)
+    n = find_pattern(landscape_, bug_)
     print(n)
 
     end = time.time()
