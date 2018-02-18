@@ -21,4 +21,4 @@ generates a numpy array of (1000, 1000) which has the pattern in file ```bug.txt
 
 ## Dependencies ##
 
-The module has been tested with python 2.7.10. Apart from the standard python libraries, it uses numpy 1.14, because of how it facilitates working with matrices. It is also used for the random generation of landscapes.
+The module has been tested with python 2.6.9, 2.7.10 and 3.6.3. Apart from the standard python libraries, it uses numpy, because of how it facilitates working with matrices. It is also used for the random generation of landscapes.
