@@ -30,8 +30,8 @@ def find_pattern(landscape, pattern):
     -------
     int
         Number of times the pattern appears in the image
-
     """
+
     if isinstance(landscape, str):
         landscape = matrix_from_file(landscape)
 
@@ -44,7 +44,7 @@ def find_pattern(landscape, pattern):
     for i, j in product(range(landscape.shape[0] - pattern.shape[0] + 1),
                         range(landscape.shape[1] - pattern.shape[1] + 1)):
 
-        if landscape[i, j] >= -3:
+        if landscape[i, j] > -3:
             found_pattern = is_pattern(landscape, pattern, i, j)
 
             if found_pattern:
@@ -81,11 +81,17 @@ def is_pattern(landscape, pattern, i, j):
     found_pattern = True
 
     # Compare element by element until a difference is found
-    for x, y in product(range(pattern.shape[0]), range(pattern.shape[1])):
-        if pattern[x, y] > -2:
-            if landscape[i + x, j + y] != pattern[x, y]:
-                found_pattern = False
+    for x in range(pattern.shape[0]):
+        for y in range(pattern.shape[1]):
+            if pattern[x, y] > 0:
+                if landscape[i + x, j + y] != pattern[x, y]:
+                    found_pattern = False
+                    break
+            elif pattern[x, y] == -2:  # Stop searching at the end of line
                 break
+
+        if found_pattern is False:
+            break
 
     return found_pattern
 
@@ -138,7 +144,7 @@ def matrix_from_file(filename):
         # Replace white spaces at the start of the row by a -2, so that they can be matched
         for k in range(n_columns):
             if matrix[r, k] == 32:
-                matrix[r, k] = -2
+                matrix[r, k] = -1
             else:
                 break
 
