@@ -235,21 +235,22 @@ def bugs_race(landscape_file, bug_east_file, bug_west_file):
     Parameters
     ----------
     landscape_file: str
-    bug_east: str
-    bug_west: str
+    bug_east_file: str
+    bug_west_file: str
 
     Returns
     -------
-    list of tuples
+    dict
 
     """
+
+    results = dict()
 
     # Bugs east
     bugs_east = find_pattern(landscape_file, bug_east_file)
     bugs_west = find_pattern(landscape_file, bug_west_file)
 
     # Read patterns
-    east_bug = matrix_from_file(bug_east_file)
     west_bug = matrix_from_file(bug_west_file)
 
     # Times for each eastern_bug to reach the end
@@ -262,14 +263,13 @@ def bugs_race(landscape_file, bug_east_file, bug_west_file):
     eta = eastern_eta + western_eta
 
     # Sort
-    sorted_eta = sorted(eta, key=lambda x: x[0])
+    results['sorted_eta'] = sorted(eta, key=lambda x: x[0])
 
     # Print the winner
-    loser = sorted_eta[-1][1]
-    winner = [x for x in ('E', 'W') if x is not loser]
-    print('And the winner is ... {}!!!'.format(winner[0]))
+    loser = results['sorted_eta'][-1][1]
+    results['winner'] = [x for x in ('E', 'W') if x is not loser][0]
 
-    return sorted_eta
+    return results
 
 
 if __name__ == '__main__':
@@ -290,7 +290,8 @@ if __name__ == '__main__':
               'ApplicationTest-onsite/bug_east.txt',
               'ApplicationTest-onsite/bug_west.txt')
 
-    print(result)
+    for (k, v) in result.items():
+        print('{}: {}'.format(k, v))
 
     end = time.time()
     print('{0:.2f}s'.format(end - start))
