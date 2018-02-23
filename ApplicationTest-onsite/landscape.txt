@@ -1,0 +1,48 @@
+                    | |
+                   -###O                           X         | |
+       X            | |                            XX       -###O
+       X                                    | |      XXX     | |
+       X                       | |         O###-       X
+       X       | |            -###O         | |
+              O###-     X      | |
+               | |       XX
+                          XXX
+                            XX                     | |            | |
+     XX                                           -###O          O###-
+      XX                                           | |            | |
+       X
+                  XX               | |
+                  XX              O###-    +----+
+                    XX             | |     |    |
+    | |                           O###-    |    |       | |
+   -###O                           | |     |    |      -###O
+    | |                                    |    |       | |
+                                           +----+
+                                                                           | |
+                | |                                             XX        O###-
+X              O###-                X                          XX          ||||
+XX              | |                 X           | |           XX           O###-
+  XX                                X          -###O        XXX             | |
+   X                                X           | |        X
+    X                               XX
+                                     XXXX+--------------+
+                                         |              |
+                     XXXXXX              |              |
+                     XXXXXXX             +--------------+
+                                                             | |
+        | |                                 | |             O###-
+       -###O                               -###O             | |            X
+        | |                    | |          | |                             X
+                              O###-                                       XXX
+                               | |                     XX                XX
+                                                        XX             XX
+     XXX                                                 XX          XXX
+    X   XXXXXXX                                 | |       XX       XX
+              XX                               -###O       X      X
+                      +---------------+         | |         X
+                      |           XXX |
+                      |        XXX    |
+                      |     XXX       |
+                      |X  X           |
+                      +---------------+
+
