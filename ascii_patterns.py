@@ -251,7 +251,9 @@ def bugs_race(landscape_file, bug_east_file, bug_west_file):
     bugs_west = find_pattern(landscape_file, bug_west_file)
 
     # Read patterns
+    east_bug = matrix_from_file(bug_east_file)
     west_bug = matrix_from_file(bug_west_file)
+    landscape = matrix_from_file(landscape_file)
 
     # Times for each eastern_bug to reach the end
     eastern_eta = [(90 - b[1], 'E') for b in bugs_east]
@@ -268,6 +270,27 @@ def bugs_race(landscape_file, bug_east_file, bug_west_file):
     # Print the winner
     loser = results['sorted_eta'][-1][1]
     results['winner'] = [x for x in ('E', 'W') if x is not loser][0]
+
+    # How many bugs of each team reach their goal without running into an obstacle?
+    # An non obstacle is defined by (32, -2, -1) in the landscape
+    find_no_obstacle = lambda x: x in (32, -1, -2)
+    find_no_obstacle = np.vectorize(find_no_obstacle)
+
+    no_obstacle_east = 0
+    for b in bugs_east:
+        possible_obstacles = landscape[b[0]:b[0] + east_bug.shape[0], b[1] + east_bug.shape[1]:]
+        no_obstacles = find_no_obstacle(possible_obstacles).all()
+        no_obstacle_east += no_obstacles
+
+    results['no_obstacle_east'] = no_obstacle_east
+
+    no_obstacle_west = 0
+    for b in bugs_west:
+        possible_obstacles = landscape[b[0]:b[0] + west_bug.shape[0], :b[1]]
+        no_obstacles = find_no_obstacle(possible_obstacles).all()
+        no_obstacle_west += no_obstacles
+
+    results['no_obstacle_west'] = no_obstacle_west
 
     return results
 
@@ -287,8 +310,8 @@ if __name__ == '__main__':
     # print(bugs_)
 
     result = bugs_race('ApplicationTest-onsite/landscape.txt',
-              'ApplicationTest-onsite/bug_east.txt',
-              'ApplicationTest-onsite/bug_west.txt')
+                       'ApplicationTest-onsite/bug_east.txt',
+                       'ApplicationTest-onsite/bug_west.txt')
 
     for (k, v) in result.items():
         print('{}: {}'.format(k, v))
