@@ -229,19 +229,68 @@ def generate_random_landscape(size, pattern, number_of_patterns):
     return landscape
 
 
+def bugs_race(landscape_file, bug_east_file, bug_west_file):
+    """
+
+    Parameters
+    ----------
+    landscape_file: str
+    bug_east: str
+    bug_west: str
+
+    Returns
+    -------
+    list of tuples
+
+    """
+
+    # Bugs east
+    bugs_east = find_pattern(landscape_file, bug_east_file)
+    bugs_west = find_pattern(landscape_file, bug_west_file)
+
+    # Read patterns
+    east_bug = matrix_from_file(bug_east_file)
+    west_bug = matrix_from_file(bug_west_file)
+
+    # Times for each eastern_bug to reach the end
+    eastern_eta = [(90 - b[1], 'E') for b in bugs_east]
+
+    # Times for each western_bug to reach the end
+    western_eta = [(b[1] + west_bug.shape[1], 'W') for b in bugs_west]
+
+    # Mix both
+    eta = eastern_eta + western_eta
+
+    # Sort
+    sorted_eta = sorted(eta, key=lambda x: x[0])
+
+    # Print the winner
+    loser = sorted_eta[-1][1]
+    winner = [x for x in ('E', 'W') if x is not loser]
+    print('And the winner is ... {}!!!'.format(winner[0]))
+
+    return sorted_eta
+
+
 if __name__ == '__main__':
 
     import time
     start = time.time()
 
-    bugs_ = find_pattern('landscape.txt', 'bug.txt')
-    print(bugs_)
+    # bugs_ = find_pattern('landscape.txt', 'bug.txt')
+    # print(bugs_)
+    #
+    # bugs_ = find_pattern('landscape2.txt', 'bug2.txt')
+    # print(bugs_)
+    #
+    # bugs_ = find_pattern('landscape2.txt', 'bug.txt')
+    # print(bugs_)
 
-    bugs_ = find_pattern('landscape2.txt', 'bug2.txt')
-    print(bugs_)
+    result = bugs_race('ApplicationTest-onsite/landscape.txt',
+              'ApplicationTest-onsite/bug_east.txt',
+              'ApplicationTest-onsite/bug_west.txt')
 
-    bugs_ = find_pattern('landscape2.txt', 'bug.txt')
-    print(bugs_)
+    print(result)
 
     end = time.time()
     print('{0:.2f}s'.format(end - start))
