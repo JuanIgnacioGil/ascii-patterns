@@ -27,8 +27,8 @@ def find_pattern(landscape, pattern):
 
     Returns
     -------
-    int
-        Number of times the pattern appears in the image
+    list of tuples
+        List of start coordinates (upper left) for each bug
     """
 
     if isinstance(landscape, str):
@@ -38,7 +38,7 @@ def find_pattern(landscape, pattern):
         pattern = matrix_from_file(pattern)
 
     # Look for the pattern
-    bugs = 0
+    bugs = []
 
     for i in range(landscape.shape[0] - pattern.shape[0] + 1):
         j = 0
@@ -50,7 +50,7 @@ def find_pattern(landscape, pattern):
 
                 if found_pattern:
                     # Increase number of bugs
-                    bugs += 1
+                    bugs.append((i, j))
 
                     # Delete the bug from the landscape, to accelerate the search
                     landscape[i:i + pattern.shape[0], j:j + pattern.shape[1]] = -3
@@ -242,19 +242,6 @@ if __name__ == '__main__':
 
     bugs_ = find_pattern('landscape2.txt', 'bug.txt')
     print(bugs_)
-
-    bug_ = np.random.randint(0, high=1000, size=(10, 5))
-    landscape_ = generate_random_landscape((1000, 1000), bug_, 200)
-    n = find_pattern(landscape_, bug_)
-    print(n)
-
-    landscape_ = generate_random_landscape((2000, 2000), 'bug.txt', 100)
-    n = find_pattern(landscape_, 'bug.txt')
-    print(n)
-
-    landscape_ = generate_random_landscape((2000, 2000), 'bug2.txt', 100)
-    n = find_pattern(landscape_, 'bug2.txt')
-    print(n)
 
     end = time.time()
     print('{0:.2f}s'.format(end - start))
